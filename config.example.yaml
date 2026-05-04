@@ -1,0 +1,32 @@
+# Agent-Forge Configuration
+# Version: 1.0
+# Description: Example configuration for multi-turn agent orchestration
+
+## @section Model Configuration
+model:
+  # @property name - Model identifier
+  # @example "qwen3", "llama3", "gpt-4"
+  name: "qwen3"
+
+  # @property endpoint - API endpoint URL
+  # @example "http://localhost:8000", "https://api.example.com/v1"
+  endpoint: "http://localhost:8000"
+
+  # @property context_limit - Token context limit
+  # Must be a positive integer representing token count
+  # @example 4096, 8192, 16384
+  context_limit: 16384
+
+## @section System Configuration
+system:
+  # @property prompt - System prompt for the agent
+  # Supports multi-line strings for complex instructions
+  prompt: |
+    You are a helpful Python coder assistant.
+    Be concise and provide code examples when helpful.
+
+## @section RAG Configuration (optional)
+# Remove this section entirely if you are not using the Go RAG service.
+# rag:
+#   # gRPC address of the go-to-rag server
+#   endpoint: "localhost:50051"
