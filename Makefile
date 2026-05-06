@@ -1,8 +1,8 @@
 OLLAMA_CONFIG  := config.ollama.yaml
-OLLAMA_MODEL   ?= qwen3:0.6b
+OLLAMA_MODEL   ?= qwen3:14b
 
 VLLM_CONFIG    := config.example.yaml
-VLLM_MODEL     := Qwen/Qwen3-8B-AWQ
+VLLM_MODEL     := mistralai/Ministral-3-3B-Reasoning-2512
 VLLM_VENV      := .venv-vllm
 
 PROTO_URL      := https://raw.githubusercontent.com/DanielBlei/go-to-rag/main/proto/rag/v1/rag.proto
@@ -25,18 +25,20 @@ run:
 
 serve:
 	$(VLLM_VENV)/bin/vllm serve $(VLLM_MODEL) \
-		--reasoning-parser qwen3 \
+		--tokenizer_mode mistral \
+		--config_format mistral \
+		--load_format mistral \
 		--enable-auto-tool-choice \
-		--tool-call-parser hermes \
+		--tool-call-parser mistral \
 		--port 8000 \
-		--gpu-memory-utilization 0.80 \
-		--max-model-len 8192 \
+		--gpu-memory-utilization 0.90 \
+		--max-model-len 16384 \
 		--max-num-seqs 1
 
 run-ollama:
 	@ollama serve > /dev/null 2>&1 & until curl -sf http://localhost:11434 > /dev/null; do sleep 0.5; done
 	@ollama pull $(OLLAMA_MODEL)
-	python main.py --config $(OLLAMA_CONFIG)
+	python main.py --config $(OLLAMA_CONFIG) --debug
 
 proto:
 	@mkdir -p /tmp/_proto_src/rag/v1

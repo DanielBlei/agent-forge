@@ -213,6 +213,15 @@ async def agent_loop(
             await _execute_tool_calls(tool_calls, tool_handlers, chat)
             continue
 
+        if not text.strip() and not tool_call_accum:
+            logger.warning(
+                "[round %d] model stalled: finish_reason=%r, no text and no tool calls — "
+                "check model capability or tool_choice setting",
+                round_num,
+                finish_reason,
+            )
+            return ""
+
         logger.debug("[round %d] final text response (%d chars)", round_num, len(text))
         chat.assistant(text)
         return text

@@ -5,9 +5,9 @@
 ## @section Model Configuration
 model:
   # @property name - Model identifier for Ollama
-  # @example "llama3", "qwen2", "mistral", "codellama"
+  # @example "llama3", "qwen3", "mistral"
   # Can be overridden by OLLAMA_MODEL environment variable
-  name: "qwen3:0.6b"
+  name: "qwen3:14b"
 
   # @property endpoint - Ollama API endpoint URL
   # Default Ollama endpoint

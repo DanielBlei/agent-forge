@@ -114,5 +114,21 @@ def test_list_directory():
     assert "Directory not found" in result["error"]
 
 
+def test_read_file_bare_filename_resolution():
+    """read_file resolves bare filenames recursively under cwd."""
+    with tempfile.NamedTemporaryFile(
+        mode="w", delete=False, suffix=".txt", dir=Path.cwd(), prefix="bare_resolve_"
+    ) as f:
+        f.write("found via bare name")
+        temp_path = Path(f.name)
+
+    try:
+        result = read_file(temp_path.name)
+        assert result["success"] is True
+        assert "found via bare name" in result["content"]
+    finally:
+        temp_path.unlink()
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

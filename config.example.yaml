@@ -5,12 +5,12 @@
 ## @section Model Configuration
 model:
   # @property name - Model identifier
-  # @example "qwen3", "llama3", "gpt-4"
-  name: "qwen3"
+  # @example "qwen3", "Ministral-3-3B-Reasoning-2512"
+  name: "mistralai/Ministral-3-3B-Reasoning-2512"
 
   # @property endpoint - API endpoint URL
-  # @example "http://localhost:8000", "https://api.example.com/v1"
-  endpoint: "http://localhost:8000"
+  # @example "http://localhost:8000/v1", "https://api.example.com/v1"
+  endpoint: "http://localhost:8000/v1"
 
   # @property context_limit - Token context limit
   # Must be a positive integer representing token count

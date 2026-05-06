@@ -3,14 +3,11 @@ import logging
 import select
 import sys
 
-from agent_forge.chat import Chat
+from agent_forge.agent import Agent
 from agent_forge.cli import parse_args
-from agent_forge.client import ClientConfig, new_client
+from agent_forge.client import ClientConfig, format_model_error_help, list_available_models
 from agent_forge.config import load_config
 from agent_forge.logger import get_logger, set_log_level
-from agent_forge.loop import agent_loop
-from agent_forge.rag_tools import init_rag_tools
-from agent_forge.tools import TOOL_DEFINITIONS, TOOL_HANDLERS
 
 _USER_PROMPT = "\033[36muser: \033[0m"  # cyan
 
@@ -53,65 +50,47 @@ def run():
 
 
 async def runner(args) -> None:
-    rag_channel = None
+    logger.info("agent-forge starting")
     try:
-        logger.info("agent-forge starting")
-
         config = load_config(args.config)
 
         if args.debug:
             set_log_level(logging.DEBUG)
 
-        cfg = ClientConfig(
-            model=config.model.name,
-            base_url=config.model.endpoint,
-            context_limit=config.model.context_limit,
-        )
+        async with await Agent.from_config(config) as agent:
+            while True:
+                try:
+                    user_input = _read_input()
+                except (EOFError, KeyboardInterrupt):
+                    break
+                if not user_input:
+                    continue
+                if user_input.lower() in {"/exit", "/quit", "/bye"}:
+                    logger.info("exiting, see you next time!")
+                    break
 
-        tool_defs = list(TOOL_DEFINITIONS)
-        tool_handlers = dict(TOOL_HANDLERS)
+                await agent.run(user_input)
 
-        if config.rag:
-            rag_defs, rag_handlers, rag_channel = init_rag_tools(config.rag.endpoint)
-            tool_defs.extend(rag_defs)
-            tool_handlers.update(rag_handlers)
-
-        chat = Chat(system=config.system.prompt)
-        client = new_client(cfg=cfg)
-
-        while True:
-            try:
-                user_input = _read_input()
-            except (EOFError, KeyboardInterrupt):
-                break
-            if not user_input:
-                continue
-
-            if user_input.lower() in {"/exit", "/quit", "/bye"}:
-                logger.info("exiting, see you next time!")
-                break
-
-            chat.user(user_input)
-            await agent_loop(
-                client=client,
-                chat=chat,
-                cfg=cfg,
-                tools=tool_defs,
-                tool_handlers=tool_handlers,
-            )
-            if logger.isEnabledFor(logging.DEBUG):
-                used = chat.token_count()
-                logger.debug(
-                    "[ctx] %d / %d tokens | %d left | %d turns",
-                    used, cfg.context_limit, cfg.context_limit - used, len(chat),
-                )
+                if logger.isEnabledFor(logging.DEBUG):
+                    used = agent.chat.token_count()
+                    logger.debug(
+                        "[ctx] %d / %d tokens | %d left | %d turns",
+                        used, agent.cfg.context_limit, agent.cfg.context_limit - used, len(agent.chat),
+                    )
 
     except Exception as e:  # noqa: BLE001
         logger.error("runner failure: %s", e)
+        error_str = str(e).lower()
+        if any(keyword in error_str for keyword in ["does not exist", "not found", "404", "no such model"]):
+            logger.info("Model not found — fetching available models...")
+            cfg = ClientConfig(
+                model=config.model.name,
+                base_url=config.model.endpoint,
+                context_limit=config.model.context_limit,
+            )
+            available_models = await list_available_models(cfg)
+            logger.error("\n%s", format_model_error_help(cfg, available_models))
         sys.exit(1)
-    finally:
-        if rag_channel:
-            await rag_channel.close()
 
 
 if __name__ == "__main__":
