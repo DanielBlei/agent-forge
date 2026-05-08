@@ -1,0 +1,192 @@
+{
+  "model": "qwen3:4b",
+  "endpoint": "http://localhost:11434/v1",
+  "run_at": "2026-05-08T14:23:18.813009+00:00",
+  "summary": {
+    "total": 11,
+    "passed": 8,
+    "failed": 3,
+    "pass_rate": 0.727,
+    "tool_call_rate": 0.909,
+    "by_category": {
+      "chat": {
+        "total": 2,
+        "passed": 1,
+        "pass_rate": 0.5
+      },
+      "config": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "grep": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "loop": {
+        "total": 2,
+        "passed": 1,
+        "pass_rate": 0.5
+      },
+      "project": {
+        "total": 1,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "tools": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": 1,
+      "category": "chat",
+      "description": "MSG_OVERHEAD constant value",
+      "question": "What is the value of the _MSG_OVERHEAD constant in chat.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 9.393,
+      "response": "The value of `_MSG_OVERHEAD` in `chat.py` is **4**.\n\nThis is defined in the file as:\n```python\n# Token overhead per message: role label + framing per OpenAI cookbook.\n_MSG_OVERHEAD = 4\n```"
+    },
+    {
+      "id": 2,
+      "category": "loop",
+      "description": "Retry attempts for transient errors",
+      "question": "How many retry attempts does agent_loop make when a transient API error occurs?",
+      "expected": [
+        "3"
+      ],
+      "passed": true,
+      "tool_called": false,
+      "latency_s": 22.263,
+      "response": "I can help with Python tasks using the tools. For example:\n\n1. To read `main.py`:\n```python\nread_file(\"main.py\")\n```\n\n2. To list all Python files:\n```python\nglob_files(pattern=\"*.py\")\n```\n\n3. To find lines containing \"error\" in Python files:\n```python\ngrep_files(pattern=\"error\", include=\"*.py\")\n```"
+    },
+    {
+      "id": 3,
+      "category": "chat",
+      "description": "Default token encoding",
+      "question": "What token encoding does the Chat class use by default?",
+      "expected": [
+        "cl100k_base"
+      ],
+      "passed": false,
+      "tool_called": true,
+      "latency_s": 45.848,
+      "response": "The Chat class in the provided code uses the **model's built-in tokenizer** by default. This means the token encoding (e.g., BPE for byte-pair encoding) is determined by the specific model configuration (e.g., `gpt-2`, `llama-2`, etc.) defined in the client's `ClientConfig`. The code snippet shows that token counts are tracked via `agent.chat.token_count()`, indicating that the encoding logic is handled internally by the model's tokenizer rather than being explicitly defined in the Chat class itself. \n\n**Answer**: The Chat class uses the model's built-in tokenizer by default (e.g., BPE for most common models)."
+    },
+    {
+      "id": 4,
+      "category": "project",
+      "description": "Required Python version",
+      "question": "What is the minimum Python version required by this project?",
+      "expected": [
+        "3.12"
+      ],
+      "passed": false,
+      "tool_called": true,
+      "latency_s": 27.585,
+      "response": "The minimum Python version required by this project is **3.14** (as specified in `.python-version`).\n\n<answer>3.14</answer>"
+    },
+    {
+      "id": 5,
+      "category": "loop",
+      "description": "Retried exception types",
+      "question": "Which exception types trigger automatic retry in agent_loop?",
+      "expected": [
+        "APIConnectionError",
+        "APITimeoutError"
+      ],
+      "passed": false,
+      "tool_called": true,
+      "latency_s": 47.382,
+      "response": "The provided code from `main.py` does not contain an explicit \"agent_loop\" file (as `glob_files` returned no matches), but the error-handling logic in the `runner` function reveals that **no automatic retries are implemented**. Instead, the code handles specific error scenarios by attempting to fetch available models when the exception message contains certain keywords (e.g., `does not exist`, `not found`, `404`, `no such model`). \n\n### Key Observations:\n1. **Exception Handling in `main.py`**:\n   - The `except Exception` block catches **all exceptions**.\n   - If the error message contains keywords like `\"does not exist\"`, `\"not found\"`, `\"404\"`, or `\"no such model\"`, it triggers a model-availability check (via `list_available_models`).\n   - **This is error recovery**, **not automatic retries**. The code does not retry operations\u2014it provides model-specific help information.\n\n2. **No Automatic Retries**:\n   - The code does **not implement retries** for exceptions. The behavior described is a one-time fallback for model-related errors, not a retry loop.\n\n### Answer:\nThere are **no exception types that trigger automatic retries** in this implementation. The error-handling logic **only attempts model recovery** (e.g., listing available models) when the exception message contains specific keywords (e.g., `\"not found\"`, `\"404\"`). This is **not a retry mechanism**, but rather a fallback step to resolve model-related errors. \n\nIf the question refers to a different part of the code (e.g., `agent.py`), additional checks would be needed, but based on the provided `main.py` and directory structure, **automatic retries are not implemented** in this project. \n\n**Final Answer**: *No exception types trigger automatic retries. The code handles model errors via fallback checks (e.g., listing available models) when error messages contain keywords like \"not found\" or \"404\", but no retries are implemented.*"
+    },
+    {
+      "id": 6,
+      "category": "grep",
+      "description": "File that defines TOOL_DEFINITIONS",
+      "question": "Which file defines the TOOL_DEFINITIONS list?",
+      "expected": [
+        "tools.py"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 13.34,
+      "response": "The main file that defines the `TOOL_DEFINITIONS` list is `agent_forge/tools.py` (line 236). This file explicitly initializes the list with the type signature and starts the list definition.\n\nExample snippet:\n```python\nTOOL_DEFINITIONS: list[ChatCompletionToolParam] = [\n```"
+    },
+    {
+      "id": 8,
+      "category": "tools",
+      "description": "Excluded directories in file search",
+      "question": "Which directory names are excluded from file search in tools.py?",
+      "expected": [
+        ".git",
+        ".venv",
+        "__pycache__"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 15.878,
+      "response": "The directory names excluded from file search in `tools.py` are defined in the `EXCLUDED_DIRS` constant as follows:\n\n**Excluded directories:**\n- `.git`\n- `.venv`\n- `node_modules`\n- `__pycache__`\n- `.pytest_cache`\n- `.mypy_cache`\n- `.idea`\n\nThese paths are automatically skipped during file searches to avoid common temporary or environment-specific directory clutter."
+    },
+    {
+      "id": 9,
+      "category": "config",
+      "description": "Model in config.ollama.yaml",
+      "question": "What model name is configured in config.ollama.yaml?",
+      "expected": [
+        "qwen3"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 9.563,
+      "response": "The model name configured in `config.ollama.yaml` is **`qwen3:14b`**.\n\n<details>\n<summary>Key configuration snippet</summary>\n```yaml\nmodel:\n  name: \"qwen3:14b\"\n```\n</details>"
+    },
+    {
+      "id": 10,
+      "category": "config",
+      "description": "context_limit in config.example.yaml",
+      "question": "What is the context_limit value in config.example.yaml?",
+      "expected": [
+        "16384"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 6.012,
+      "response": "The `context_limit` value in `config.example.yaml` is **16384**.\n\nThis is explicitly defined in the Model Configuration section of the file with the comment indicating it must be a positive integer representing token count."
+    },
+    {
+      "id": 11,
+      "category": "grep",
+      "description": "File where _trim_context is defined",
+      "question": "In which file is the _trim_context function defined?",
+      "expected": [
+        "loop.py"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 14.085,
+      "response": "The `_trim_context` function is defined in `agent_forge/loop.py` at line 36."
+    },
+    {
+      "id": 12,
+      "category": "tools",
+      "description": "Number of default tool handlers",
+      "question": "How many tool handlers are registered in TOOL_HANDLERS in tools.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 8.65,
+      "response": "The `TOOL_HANDLERS` dictionary in `tools.py` contains **4** registered tool handlers, corresponding to the following keys:\n- `\"read_file\"`\n- `\"glob_files\"`\n- `\"grep_files\"`\n- `\"list_directory\"`\n\n**Answer:** 4"
+    }
+  ]
+}

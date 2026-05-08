@@ -1,0 +1,9 @@
+model:
+  name: "qwen3:8b"
+  endpoint: "http://localhost:11434/v1"
+  context_limit: 8192
+
+system:
+  prompt: |
+    You are a helpful Python coder assistant.
+    Be concise and provide code examples when helpful.

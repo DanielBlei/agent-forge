@@ -1,0 +1,192 @@
+{
+  "model": "qwen3:14b",
+  "endpoint": "http://localhost:11434/v1",
+  "run_at": "2026-05-08T14:31:54.632775+00:00",
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "pass_rate": 1.0,
+    "tool_call_rate": 1.0,
+    "by_category": {
+      "chat": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "config": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "grep": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "loop": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "project": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 1.0
+      },
+      "tools": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": 1,
+      "category": "chat",
+      "description": "MSG_OVERHEAD constant value",
+      "question": "What is the value of the _MSG_OVERHEAD constant in chat.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 39.091,
+      "response": "The value of the `_MSG_OVERHEAD` constant in `chat.py` is **4**. It is defined in line 23 of the file as:\n\n```python\n_MSG_OVERHEAD = 4\n```"
+    },
+    {
+      "id": 2,
+      "category": "loop",
+      "description": "Retry attempts for transient errors",
+      "question": "How many retry attempts does agent_loop make when a transient API error occurs?",
+      "expected": [
+        "3"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 53.141,
+      "response": "The `agent_loop` function in the provided code handles transient API errors with **3 retry attempts**. This is specified by the `stop_after_attempt(3)` parameter in the `AsyncRetrying` configuration within the `_make_api_call` function. \n\n### Key Details:\n- **Transient Errors**: The retry logic is triggered for exceptions of type `_TRANSIENT_ERRORS` (e.g., `APIConnectionError`, `APITimeoutError`).\n- **Exponential Backoff**: Retries are spaced using `wait_exponential`, but the number of attempts is capped at **3 total attempts**.\n- **Code Comment**: The comment in `agent_loop` explicitly states: *\"Transient errors are retried with exponential backoff (3 attempts).\"*\n\n### Clarification:\n- **Total Attempts**: The function attempts the API call up to **3 times** (initial attempt + 2 retries).\n- **Retry Count**: The number of **retries** (excluding the initial attempt) is **2**.\n- **User Question**: The question asks for the number of **retry attempts**, which is **2**. However, the code comment and context suggest the **total number of attempts** (including initial) is **3**, which is likely the intended answer.\n\n### Answer:\nThe `agent_loop` makes **3 attempts** in total (initial + 2 retries) when handling transient API errors."
+    },
+    {
+      "id": 3,
+      "category": "chat",
+      "description": "Default token encoding",
+      "question": "What token encoding does the Chat class use by default?",
+      "expected": [
+        "cl100k_base"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 38.468,
+      "response": "The Chat class likely uses **tiktoken** encoding by default, as indicated by references to `tiktoken.Encoding` in the codebase (e.g., in `.venv-vllm/lib/python3.12/site-packages/llguidance/tiktoken.py`). However, the exact encoding (e.g., `cl100k_base`, `gpt2`, etc.) would depend on the specific implementation in the Chat class's code, which isn't shown in the search results. To confirm, you'd need to inspect the Chat class's initialization code directly."
+    },
+    {
+      "id": 4,
+      "category": "project",
+      "description": "Required Python version",
+      "question": "What is the minimum Python version required by this project?",
+      "expected": [
+        "3.12"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 22.654,
+      "response": "The minimum Python version required by this project is **3.12** or higher, as specified in the `pyproject.toml` file:\n\n```toml\nrequires-python = \">=3.12\"\n```"
+    },
+    {
+      "id": 5,
+      "category": "loop",
+      "description": "Retried exception types",
+      "question": "Which exception types trigger automatic retry in agent_loop?",
+      "expected": [
+        "APIConnectionError",
+        "APITimeoutError"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 32.481,
+      "response": "The `agent_loop` function automatically retries on the following exception types:\n\n1. **`APIConnectionError`** (from OpenAI SDK)\n2. **`APITimeoutError`** (from OpenAI SDK)\n\nThese are defined in the `_TRANSIENT_ERRORS` tuple and handled by the `AsyncRetrying` decorator with exponential backoff (3 attempts).\n\nFor context-length errors (`BadRequestError` with specific codes), there's a **single forced retry** after trimming the chat history, but this is not part of the general retry mechanism."
+    },
+    {
+      "id": 6,
+      "category": "grep",
+      "description": "File that defines TOOL_DEFINITIONS",
+      "question": "Which file defines the TOOL_DEFINITIONS list?",
+      "expected": [
+        "tools.py"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 20.948,
+      "response": "The `TOOL_DEFINITIONS` list is defined in the file `agent_forge/tools.py`. This is confirmed by the line:\n\n```python\nTOOL_DEFINITIONS: list[ChatCompletionToolParam] = [\n```\n\nin that file, which initializes the list. Other files like `agent_forge/rag_tools.py` and `agent_forge/agent.py` reference or use `TOOL_DEFINITIONS`, but the definition itself is in `tools.py`."
+    },
+    {
+      "id": 8,
+      "category": "tools",
+      "description": "Excluded directories in file search",
+      "question": "Which directory names are excluded from file search in tools.py?",
+      "expected": [
+        ".git",
+        ".venv",
+        "__pycache__"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 33.431,
+      "response": "The `tools.py` files themselves do not inherently exclude directories by default. However, when using file search tools (like `glob_files` or `grep_files`), certain directories are typically **excluded by convention** in many projects, such as:\n\n- `.git` (version control)\n- `.venv` or `venv` (virtual environments)\n- `__pycache__` (Python bytecode caches)\n- `node_modules` (Node.js dependencies)\n- `.idea` or `.vscode` (IDE configurations)\n\nThese are **not excluded by the tools themselves**, but rather by **user-defined configurations** or **project-specific practices**. If you want to confirm whether specific directories are excluded in your project, you would need to check for `.gitignore`, `setup.py`, or other configuration files that might define such rules.\n\nIf you meant a specific `tools.py` file (e.g., in your project), please clarify, and I can check its contents directly."
+    },
+    {
+      "id": 9,
+      "category": "config",
+      "description": "Model in config.ollama.yaml",
+      "question": "What model name is configured in config.ollama.yaml?",
+      "expected": [
+        "qwen3"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 8.314,
+      "response": "The model name configured in `config.ollama.yaml` is `qwen3:14b`. This is specified under the `model.name` property in the file."
+    },
+    {
+      "id": 10,
+      "category": "config",
+      "description": "context_limit in config.example.yaml",
+      "question": "What is the context_limit value in config.example.yaml?",
+      "expected": [
+        "16384"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 15.163,
+      "response": "The `context_limit` value in `config.example.yaml` is set to **16384**."
+    },
+    {
+      "id": 11,
+      "category": "grep",
+      "description": "File where _trim_context is defined",
+      "question": "In which file is the _trim_context function defined?",
+      "expected": [
+        "loop.py"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 15.477,
+      "response": "The `_trim_context` function is defined in the file `agent_forge/loop.py`. \n\nThis is confirmed by the first match in the search results, which shows the function definition:\n```python\ndef _trim_context(chat: Chat, cfg: ClientConfig) -> bool:\n```"
+    },
+    {
+      "id": 12,
+      "category": "tools",
+      "description": "Number of default tool handlers",
+      "question": "How many tool handlers are registered in TOOL_HANDLERS in tools.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 53.569,
+      "response": "Here's an overview of the tools defined in the `tools.py` file:\n\n### 1. **`read_file`**\n   - **Purpose**: Read the contents of a file.\n   - **Parameters**:\n     - `path` (required): File path (absolute, relative, or bare filename).\n     - `limit` (optional): Maximum number of lines to return from the start of the file.\n   - **Use Case**: When you know the exact file path and want to read its contents.\n\n### 2. **`glob_files`**\n   - **Purpose**: Find files using a glob pattern (e.g., `*.py`).\n   - **Parameters**:\n     - `pattern` (required): Glob pattern (e.g., `src/**/*.ts`).\n     - `path` (optional): Directory to search in (defaults to current directory).\n   - **Use Case**: When you need to find multiple files matching a pattern.\n\n### 3. **`grep_files`**\n   - **Purpose**: Search for text or regex patterns in files.\n   - **Parameters**:\n     - `pattern` (required): Text or regex pattern to search for.\n     - `path` (optional): File or directory to search in.\n     - `include` (optional): Glob pattern to filter files (e.g., `*.py`).\n     - `regex` (optional): Treat pattern as regex (default: `True`).\n     - `context` (optional): Number of context lines to include around matches.\n   - **Use Case**: When searching for specific text or patterns across files.\n\n### 4. **`list_directory`**\n   - **Purpose**: List files and subdirectories in a directory.\n   - **Parameters**:\n     - `path` (optional): Directory to list (defaults to current directory).\n   - **Use Case**: When exploring directory structure before reading or searching.\n\n---\n\nLet me know if you'd like to use any of these tools for a specific task! \ud83d\udee0\ufe0f"
+    }
+  ]
+}

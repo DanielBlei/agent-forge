@@ -1,0 +1,192 @@
+{
+  "model": "qwen3:8b",
+  "endpoint": "http://localhost:11434/v1",
+  "run_at": "2026-05-08T14:12:36.447881+00:00",
+  "summary": {
+    "total": 11,
+    "passed": 10,
+    "failed": 1,
+    "pass_rate": 0.909,
+    "tool_call_rate": 0.909,
+    "by_category": {
+      "chat": {
+        "total": 2,
+        "passed": 1,
+        "pass_rate": 0.5
+      },
+      "config": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "grep": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "loop": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      },
+      "project": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 1.0
+      },
+      "tools": {
+        "total": 2,
+        "passed": 2,
+        "pass_rate": 1.0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": 1,
+      "category": "chat",
+      "description": "MSG_OVERHEAD constant value",
+      "question": "What is the value of the _MSG_OVERHEAD constant in chat.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 22.788,
+      "response": "The value of the `_MSG_OVERHEAD` constant in `chat.py` is **4**.\n\nThis is defined in the file as:\n```python\n_MSG_OVERHEAD = 4\n```"
+    },
+    {
+      "id": 2,
+      "category": "loop",
+      "description": "Retry attempts for transient errors",
+      "question": "How many retry attempts does agent_loop make when a transient API error occurs?",
+      "expected": [
+        "3"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 29.039,
+      "response": "The provided code in `main.py` does not explicitly define a retry mechanism for transient API errors. The `Agent` class and its `run` method are used, but the retry logic (if any) is not visible in the shared code. \n\nTo determine the exact retry count:\n1. Check the `Agent` class implementation (likely in `agent_forge/agent.py` or similar).\n2. Look for configuration parameters in files like `config.ollama.yaml` or `config.schema.yaml` that might define retry policies.\n3. Inspect error handling in the `runner` function for custom retry logic.\n\nWithout access to these files, the answer cannot be determined from the current code."
+    },
+    {
+      "id": 3,
+      "category": "chat",
+      "description": "Default token encoding",
+      "question": "What token encoding does the Chat class use by default?",
+      "expected": [
+        "cl100k_base"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 7.325,
+      "response": "The `Chat` class's default token encoding depends on the specific library/framework it's from (e.g., Hugging Face Transformers, PyTorch, etc.). Without context about the library or codebase, I cannot determine the exact encoding.\n\nTo find this information:\n1. Locate the `Chat` class definition in your codebase.\n2. Check its constructor or documentation for tokenizer/encoding parameters.\n3. Look for references to tokenizers (e.g., `transformers.Tokenizer`).\n\nExample (Hugging Face style):\n```python\nfrom transformers import Chat, AutoTokenizer\n\nchat = Chat(\"gpt2\")\ntokenizer = AutoTokenizer.from_pretrained(\"gpt2\")  # Uses GPT2's BPE encoding by default\n```\n\nIf you share the code for the `Chat` class or its dependencies, I can analyze it further."
+    },
+    {
+      "id": 4,
+      "category": "project",
+      "description": "Required Python version",
+      "question": "What is the minimum Python version required by this project?",
+      "expected": [
+        "3.12"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 20.471,
+      "response": "The minimum Python version required by the project is **3.12**, as indicated by the environment path `\".venv-vllm/lib/python3.12/site-packages/\"`. However, this reflects the Python version used in the virtual environment rather than the project's explicit requirements. \n\nTo confirm the minimum version specified in the project's configuration (e.g., `setup.py` or `pyproject.toml`), further checks would be needed. For example, if `setup.py` includes classifiers like `Programming Language :: Python :: 3.12` or constraints in `requirements.txt`, that would clarify the requirement. \n\nIf you'd like, I can search for additional files (e.g., `pyproject.toml`, `README.md`, or `setup.cfg`) to locate explicit version specs."
+    },
+    {
+      "id": 5,
+      "category": "loop",
+      "description": "Retried exception types",
+      "question": "Which exception types trigger automatic retry in agent_loop?",
+      "expected": [
+        "APIConnectionError",
+        "APITimeoutError"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 21.682,
+      "response": "The `agent_loop` automatically retries for these exception types:\n\n```python\n_TRANSIENT_ERRORS = (APIConnectionError, APITimeoutError)\n```\n\n**Key details:**\n1. **Retrying mechanism**: Uses `tenacity.AsyncRetrying` with `retry_if_exception_type` predicate\n2. **Retry conditions**: \n   - `APIConnectionError` (e.g., network issues)\n   - `APITimeoutError` (e.g., server response delays)\n3. **Excludes**: `BadRequestError` (handled separately for context-length issues)\n\nThis logic is implemented in `agent_forge/loop.py` and is part of the API call retry logic in `_make_api_call`."
+    },
+    {
+      "id": 6,
+      "category": "grep",
+      "description": "File that defines TOOL_DEFINITIONS",
+      "question": "Which file defines the TOOL_DEFINITIONS list?",
+      "expected": [
+        "tools.py"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 14.727,
+      "response": "The `TOOL_DEFINITIONS` list is defined in `agent_forge/tools.py`:\n\n```python\nTOOL_DEFINITIONS: list[ChatCompletionToolParam] = [\n    # ... (tool definitions here)\n]\n```\n\nThis is confirmed by the grep results showing the explicit list initialization in that file. The test file `test_evals.py` also references this definition in its comments."
+    },
+    {
+      "id": 8,
+      "category": "tools",
+      "description": "Excluded directories in file search",
+      "question": "Which directory names are excluded from file search in tools.py?",
+      "expected": [
+        ".git",
+        ".venv",
+        "__pycache__"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 11.346,
+      "response": "The directories excluded from file search in `tools.py` are specified in the `EXCLUDED_DIRS` set. These directories are intentionally skipped to avoid searching in temporary or version-controlled folders. Here are the excluded directory names:\n\n- `.git`\n- `.venv`\n- `node_modules`\n- `__pycache__`\n- `.pytest_cache`\n- `.mypy_cache`\n- `.idea`\n\nThese directories are commonly associated with development tools, version control systems, or build artifacts and are often excluded to optimize search performance and avoid irrelevant results."
+    },
+    {
+      "id": 9,
+      "category": "config",
+      "description": "Model in config.ollama.yaml",
+      "question": "What model name is configured in config.ollama.yaml?",
+      "expected": [
+        "qwen3"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 11.248,
+      "response": "The model name configured in `config.ollama.yaml` is `\"qwen3:14b\"`. This is specified under the `model.name` property in the file."
+    },
+    {
+      "id": 10,
+      "category": "config",
+      "description": "context_limit in config.example.yaml",
+      "question": "What is the context_limit value in config.example.yaml?",
+      "expected": [
+        "16384"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 6.038,
+      "response": "The `context_limit` value in `config.example.yaml` is **16384** tokens. This is specified under the Model Configuration section of the file."
+    },
+    {
+      "id": 11,
+      "category": "grep",
+      "description": "File where _trim_context is defined",
+      "question": "In which file is the _trim_context function defined?",
+      "expected": [
+        "loop.py"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 12.386,
+      "response": "The `_trim_context` function is defined in `agent_forge/loop.py`. Here's the definition:\n\n```python\ndef _trim_context(chat: Chat, cfg: ClientConfig) -> bool:\n    # function implementation\n```\n\nThis file contains both the function's definition and usage examples."
+    },
+    {
+      "id": 12,
+      "category": "tools",
+      "description": "Number of default tool handlers",
+      "question": "How many tool handlers are registered in TOOL_HANDLERS in tools.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": true,
+      "tool_called": true,
+      "latency_s": 23.805,
+      "response": "The `TOOL_HANDLERS` dictionary in `tools.py` registers **4 tool handlers**. These correspond to the following functions:\n\n1. `read_file`  \n2. `glob_files`  \n3. `grep_files`  \n4. `list_directory`  \n\n**Answer:** `4`"
+    }
+  ]
+}

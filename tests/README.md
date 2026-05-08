@@ -1,107 +1,69 @@
-# Agent-Forge Tests
+# Tests
 
-This directory contains tests for the agent-forge project.
+This is not a comprehensive test suite. It's a small set of tests that prove specific invariants — things the loop *must* guarantee for correct behavior, independent of which model is on the other end.
 
-## Directory Structure
+## What we're testing and why
 
-- `tests/` - Root test directory
-  - `unit/` - Unit tests (fast, isolated tests)
-  - `integration/` - Integration tests (end-to-end tests)
-  - `run_tests.py` - Test runner script
+The interesting failure modes in an agent loop fall into two layers:
 
-## Running Tests
+**Layer 1 — structural invariants.** These don't require a live LLM. They verify that the plumbing holds: context trimming never corrupts the message sequence, parallel tool calls are always fully resolved before the next round, and a crashing tool handler can't take down the loop. If these break, no amount of prompt engineering fixes it.
 
-### Using Makefile (Recommended)
+**Layer 2 — behavioral evals.** These require a real model. Does the agent actually use its tools to find answers rather than hallucinating? Does it pick the right tool for the job? 11 questions across 5 categories (chat, loop, tools, config, grep) — each with a ground-truth answer verifiable from the repo itself.
 
-The project includes a Makefile with convenient test commands:
+## Unit tests
+
+`test_chat_flow.py` — basic Chat class mechanics: appending turns, single and multi-tool sequences, the message structure the OpenAI API expects.
+
+`test_chat_scenarios.py` — message structure across complete multi-round workflows. Simulates the turn sequences `agent_loop` produces (user → tool rounds → final assistant) and asserts counts and roles are correct. No LLM involved.
+
+`test_loop_invariants.py` — three Layer 1 proofs:
+- **Atomic group preservation**: trimming drops an `assistant[tool_calls]` + its tool results together, never one without the other. Verified by building a chat with two tool-call groups, trimming to a budget that forces the first group out, then walking the resulting message list for orphaned tool messages.
+- **Parallel result ordering**: `_execute_tool_calls` injects all results before returning, in invocation order, even when handlers finish out-of-order. Verified by racing three async handlers with different sleep durations and asserting position, not just presence.
+- **Exception isolation**: a handler that raises produces an `Error:` tool message in chat; it doesn't propagate out of the loop. Verified on `_run_single_tool` directly, then again through `_execute_tool_calls` with a mixed success/failure call list.
+
+## Integration tests (Layer 2 evals)
+
+`test_evals.py` — 11 behavioral questions sent to a live model. Each question has a known correct answer in the repo. Two assertions per question: the model called at least one tool (no hallucination without evidence), and the response contains the expected string(s).
+
+Results are written to `tests/benchmarks/` after each run as `2026_05_08_1431_qwen3-14b.json` — date-first so they sort chronologically. Each run produces a separate file so results accumulate across models for comparison. The JSON includes per-question responses, pass/fail, tool call flag, latency, and a summary broken down by category.
+
+### Configs
+
+Model configs for benchmarking live in `tests/configs/`. The project root `config.yaml` is for general use; the files below are specifically for eval runs.
+
+| Config | Model |
+|--------|-------|
+| `tests/configs/config.qwen3-0.6b.yaml` | qwen3:0.6b |
+| `tests/configs/config.qwen3-4b.yaml` | qwen3:4b |
+| `tests/configs/config.qwen3-8b.yaml` | qwen3:8b |
+| `tests/configs/config.qwen3-14b.yaml` | qwen3:14b |
+
+### Running
 
 ```bash
-make help              # Show available commands
-make test              # Run all tests
-make test-unit         # Run only unit tests
-make test-integration  # Run only integration tests
-make clean             # Clean up temporary files
+# Unit tests only (no model needed)
+pytest tests/unit/ -v
+
+# Full benchmark across all 4 models
+pytest tests/integration/test_evals.py -v -s --config=tests/configs/config.qwen3-0.6b.yaml
+pytest tests/integration/test_evals.py -v -s --config=tests/configs/config.qwen3-4b.yaml
+pytest tests/integration/test_evals.py -v -s --config=tests/configs/config.qwen3-8b.yaml
+pytest tests/integration/test_evals.py -v -s --config=tests/configs/config.qwen3-14b.yaml
 ```
 
-### Using Python Directly
+Evals skip automatically if the model endpoint is unreachable — safe to run in CI without Ollama.
 
-```bash
-# Run all tests
-python tests/run_tests.py
+## Results
 
-# Run only unit tests
-python tests/run_tests.py unit
+Pass/fail is determined by substring matching against known correct answers — a structural check. The `response` field in each JSON contains the full model answer for qualitative review. LLM-as-judge and human-in-the-loop validation are the next step for evaluating answer quality beyond keyword presence.
 
-# Run only integration tests
-python tests/run_tests.py integration
-```
+_Hardware: Ollama on NVIDIA RTX 4070 Super, Fedora Linux 43._
 
-### Using pytest Directly
+| Model | Pass rate | Tool call rate | chat | config | grep | loop | project | tools |
+|-------|-----------|----------------|------|--------|------|------|---------|-------|
+| qwen3:0.6b | 9.1% | 27.3% | 0/2 | 0/2 | 0/2 | 0/2 | 0/1 | 1/2 |
+| qwen3:4b | 72.7% | 90.9% | 1/2 | 2/2 | 2/2 | 1/2 | 0/1 | 2/2 |
+| qwen3:8b | 90.9% | 90.9% | 1/2 | 2/2 | 2/2 | 2/2 | 1/1 | 2/2 |
+| qwen3:14b | 100% | 100% | 2/2 | 2/2 | 2/2 | 2/2 | 1/1 | 2/2 |
 
-```bash
-# Run all tests
-python -m pytest tests/ -v
-
-# Run specific test file
-python -m pytest tests/unit/test_chat_flow.py -v
-
-# Run tests with specific pattern
-python -m pytest tests/ -k "test_chat" -v
-```
-
-## Test Organization
-
-### Unit Tests
-Unit tests focus on testing individual components in isolation:
-
-- `test_chat_flow.py` - Tests for the Chat class and tool call handling
-- `test_multi_tool.py` - Tests for multi-tool behavior and agent loop flow
-
-### Integration Tests
-Integration tests will test the complete system workflow:
-
-- End-to-end agent loop testing
-- Real API interactions (mocked)
-- Complete conversation flows
-
-## Writing New Tests
-
-### Unit Test Example
-```python
-def test_some_functionality():
-    """Test description."""
-    # Setup
-    chat = Chat(system="test")
-    
-    # Exercise
-    chat.user("test message")
-    
-    # Verify
-    assert len(chat) == 1
-    assert chat.token_count() > 0
-```
-
-### Integration Test Example
-```python
-async def test_complete_workflow():
-    """Test complete agent workflow."""
-    # Setup with mocks
-    chat = Chat(system="test")
-    
-    # Exercise complete flow
-    # ...
-    
-    # Verify final state
-    assert expected_outcome
-```
-
-## Test Requirements
-
-- Python 3.12+
-- pytest
-- All agent-forge dependencies
-
-Install test requirements:
-```bash
-pip install pytest
-```
+Raw benchmark files: [`tests/benchmarks/`](benchmarks/)

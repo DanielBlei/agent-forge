@@ -1,0 +1,192 @@
+{
+  "model": "qwen3:0.6b",
+  "endpoint": "http://localhost:11434/v1",
+  "run_at": "2026-05-08T14:07:47.729616+00:00",
+  "summary": {
+    "total": 11,
+    "passed": 1,
+    "failed": 10,
+    "pass_rate": 0.091,
+    "tool_call_rate": 0.273,
+    "by_category": {
+      "chat": {
+        "total": 2,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "config": {
+        "total": 2,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "grep": {
+        "total": 2,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "loop": {
+        "total": 2,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "project": {
+        "total": 1,
+        "passed": 0,
+        "pass_rate": 0.0
+      },
+      "tools": {
+        "total": 2,
+        "passed": 1,
+        "pass_rate": 0.5
+      }
+    }
+  },
+  "results": [
+    {
+      "id": 1,
+      "category": "chat",
+      "description": "MSG_OVERHEAD constant value",
+      "question": "What is the value of the _MSG_OVERHEAD constant in chat.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 3.443,
+      "response": "The value of the `_MSG_OVERHEAD` constant in `chat.py` is not available via the provided tools. Please provide the relevant file path or context (e.g., directory or existing file) in chat.py, and I\u2019ll retrieve its value for you."
+    },
+    {
+      "id": 2,
+      "category": "loop",
+      "description": "Retry attempts for transient errors",
+      "question": "How many retry attempts does agent_loop make when a transient API error occurs?",
+      "expected": [
+        "3"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 0.943,
+      "response": "The question cannot be answered with the provided tools as there is no specific context or implementation related to `agent_loop` or retry attempts for transient API errors."
+    },
+    {
+      "id": 3,
+      "category": "chat",
+      "description": "Default token encoding",
+      "question": "What token encoding does the Chat class use by default?",
+      "expected": [
+        "cl100k_base"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 0.653,
+      "response": "The tools provided don't include information about class definitions or token encoding defaults. I cannot determine what token encoding the Chat class uses by default. Let me know if there's another way I can assist!"
+    },
+    {
+      "id": 4,
+      "category": "project",
+      "description": "Required Python version",
+      "question": "What is the minimum Python version required by this project?",
+      "expected": [
+        "3.12"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 0.899,
+      "response": "I don't have access to the project's configuration file or metadata to determine the minimum Python version required. You would need to check the project's setup files (e.g., `requirements.txt`, `setup.py`, or a directory containing project information) for this information."
+    },
+    {
+      "id": 5,
+      "category": "loop",
+      "description": "Retried exception types",
+      "question": "Which exception types trigger automatic retry in agent_loop?",
+      "expected": [
+        "APIConnectionError",
+        "APITimeoutError"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 0.696,
+      "response": "The question about exception types triggering automatic retry in the agent loop is not related to the available tools. The functions provided (read_file, grep_files, list_directory) are designed to retrieve file content or search within files, but they do not address exception handling mechanisms. To resolve this, you would need to consult the relevant system documentation or codebase for exceptions triggered during agent loop operations."
+    },
+    {
+      "id": 6,
+      "category": "grep",
+      "description": "File that defines TOOL_DEFINITIONS",
+      "question": "Which file defines the TOOL_DEFINITIONS list?",
+      "expected": [
+        "tools.py"
+      ],
+      "passed": false,
+      "tool_called": true,
+      "latency_s": 1.976,
+      "response": "The file `main.py` contains the definitions for the ` TOOL_DEFINITIONS` list."
+    },
+    {
+      "id": 8,
+      "category": "tools",
+      "description": "Excluded directories in file search",
+      "question": "Which directory names are excluded from file search in tools.py?",
+      "expected": [
+        ".git",
+        ".venv",
+        "__pycache__"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 0.785,
+      "response": "The tools available do not include any functions for checking or excluding directory names. The `list_directory` function can explore file and subdirectory structures, but it does not provide information about excluded directories directly. Therefore, I cannot determine which directory names are excluded using the provided tools."
+    },
+    {
+      "id": 9,
+      "category": "config",
+      "description": "Model in config.ollama.yaml",
+      "question": "What model name is configured in config.ollama.yaml?",
+      "expected": [
+        "qwen3"
+      ],
+      "passed": false,
+      "tool_called": true,
+      "latency_s": 1.375,
+      "response": "The model name configured in the `config.ollama.yaml` file is **Qwen 3:14b**."
+    },
+    {
+      "id": 10,
+      "category": "config",
+      "description": "context_limit in config.example.yaml",
+      "question": "What is the context_limit value in config.example.yaml?",
+      "expected": [
+        "16384"
+      ],
+      "passed": false,
+      "tool_called": false,
+      "latency_s": 0.618,
+      "response": "I don't have access to or the ability to read configuration files like `config.example.yaml`. To obtain information about this file, you would need to consult its manual or documentation. Let me know if you have other questions related to file operations!"
+    },
+    {
+      "id": 11,
+      "category": "grep",
+      "description": "File where _trim_context is defined",
+      "question": "In which file is the _trim_context function defined?",
+      "expected": [
+        "loop.py"
+      ],
+      "passed": false,
+      "tool_called": true,
+      "latency_s": 3.047,
+      "response": "The `_trim_context` function appears to be defined in a file system directory that wasn't explicitly listed. However, without additional information or context, the exact location of the function can't be determined using the tools provided. To locate it, further exploration of relevant directories would be necessary, such as checking `/usr/include/xxx` or other relevant paths."
+    },
+    {
+      "id": 12,
+      "category": "tools",
+      "description": "Number of default tool handlers",
+      "question": "How many tool handlers are registered in TOOL_HANDLERS in tools.py?",
+      "expected": [
+        "4"
+      ],
+      "passed": true,
+      "tool_called": false,
+      "latency_s": 0.986,
+      "response": "The tools.py file in the provided context defines 4 functions:  \n- `read_file`  \n- `glob_files`  \n- `grep_files`  \n- `list_directory`  \n\nThis means there are **4 tool handlers** registered in the file."
+    }
+  ]
+}

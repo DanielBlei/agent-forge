@@ -9,15 +9,91 @@ retrieval and generation over gRPC. agent-forge calls it as a first-class tool d
 
 ## Purpose
 
-This repository explores how agentic loops actually work at the implementation level:
+Hands-on exploration of how agentic systems work at the implementation level:
 
-- How context windows fill and need to be trimmed without breaking tool-call sequences
-- How a local model (Ollama or vLLM) can call out to a separate retrieval service mid-conversation
+- How multi-turn conversation state fills a context window and must be trimmed without corrupting tool-call sequences
+- How models at different scales decide when to call a tool, which one to pick, and how to interpret the result
 - How streaming, retries, and context errors compose in a real async loop
+- How local models behave in an agentic context — and where smaller ones break down
 
 The loop, context management, and tool dispatch are all explicit and readable. Deliberately built without
-LangChain or LangGraph — the intent is to explore the pillars of agentic workflow at the implementation
-level before adopting a framework that abstracts them away.
+LangChain or LangGraph — the intent is to understand the mechanics before adopting a framework that abstracts them away.
+
+## Benchmarks
+
+A core question this project explores: **does tool-use comprehension scale with parameter count?** Can a small model decide *when* a tool is needed, pick the right one, and correctly interpret the result — or does that only emerge at larger scale?
+
+The benchmark is a diagnostic baseline, not a destination. The goal is a feedback loop: identify where models fail, intervene (prompt engineering, fine-tuning, distillation), re-run, and compare. The category breakdown in each result file points at the specific failure modes worth targeting.
+
+11 behavioral evals ask a live model questions about this codebase, each with a ground-truth answer verifiable from the repo. Two pass conditions per question: the model must call a tool (no hallucinating without evidence) and the response must contain the expected string(s).
+
+_Run on Ollama, NVIDIA RTX 4070 Super, Fedora Linux 43. See [tests/README.md](tests/README.md) for full methodology._
+
+<table>
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th align="center">Pass rate</th>
+      <th align="center">Tool call rate</th>
+      <th align="center">chat</th>
+      <th align="center">config</th>
+      <th align="center">grep</th>
+      <th align="center">loop</th>
+      <th align="center">project</th>
+      <th align="center">tools</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>qwen3:0.6b</code></td>
+      <td align="center">9.1%</td>
+      <td align="center">27.3%</td>
+      <td align="center">0/2</td>
+      <td align="center">0/2</td>
+      <td align="center">0/2</td>
+      <td align="center">0/2</td>
+      <td align="center">0/1</td>
+      <td align="center">1/2</td>
+    </tr>
+    <tr>
+      <td><code>qwen3:4b</code></td>
+      <td align="center">72.7%</td>
+      <td align="center">90.9%</td>
+      <td align="center">1/2</td>
+      <td align="center">2/2</td>
+      <td align="center">2/2</td>
+      <td align="center">1/2</td>
+      <td align="center">0/1</td>
+      <td align="center">2/2</td>
+    </tr>
+    <tr>
+      <td><code>qwen3:8b</code></td>
+      <td align="center">90.9%</td>
+      <td align="center">90.9%</td>
+      <td align="center">1/2</td>
+      <td align="center">2/2</td>
+      <td align="center">2/2</td>
+      <td align="center">2/2</td>
+      <td align="center">1/1</td>
+      <td align="center">2/2</td>
+    </tr>
+    <tr>
+      <td><code>qwen3:14b</code></td>
+      <td align="center"><strong>100%</strong></td>
+      <td align="center"><strong>100%</strong></td>
+      <td align="center">2/2</td>
+      <td align="center">2/2</td>
+      <td align="center">2/2</td>
+      <td align="center">2/2</td>
+      <td align="center">1/1</td>
+      <td align="center">2/2</td>
+    </tr>
+  </tbody>
+</table>
+
+The gap between 0.6b and 4b is stark, tool-calling appears to be an emergent capability that requires a minimum parameter threshold. Above ~8b the differences narrow. Pass/fail here is substring matching against known answers, which measures presence but not reasoning quality. 
+
+Next steps: LLM-as-judge scoring and human review to evaluate whether answers are correct for the right reasons, not just because they contain the right string.
 
 ## Quick start
 
